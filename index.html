@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Planner & Financial Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-card {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 1.25rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .app-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+        }
+        .tab-btn {
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+        .tab-btn.active {
+            color: #0f172a;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            font-weight: 600;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24 antialiased selection:bg-indigo-100 selection:text-indigo-700">
+
+    <div id="pin-lock-screen" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-xs w-full text-center shadow-2xl space-y-6">
+            <div class="w-16 h-16 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-sm">
+                <i class="fa-solid fa-lock" id="pin-icon"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900" id="pin-screen-title">Security Check</h3>
+                <p class="text-xs text-slate-500 mt-1" id="pin-screen-subtitle">Enter your 4-digit PIN to unlock</p>
+            </div>
+            <div class="flex justify-center gap-3 my-2" id="pin-dots">
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 transition-all duration-200"></div>
+                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 transition-all duration-200"></div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 max-w-[210px] mx-auto">
+                <button onclick="pressPinDigit('1')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">1</button>
+                <button onclick="pressPinDigit('2')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">2</button>
+                <button onclick="pressPinDigit('3')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">3</button>
+                <button onclick="pressPinDigit('4')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">4</button>
+                <button onclick="pressPinDigit('5')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">5</button>
+                <button onclick="pressPinDigit('6')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">6</button>
+                <button onclick="pressPinDigit('7')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">7</button>
+                <button onclick="pressPinDigit('8')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">8</button>
+                <button onclick="pressPinDigit('9')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">9</button>
+                <button onclick="clearPinInput()" class="h-12 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-medium text-xs transition-colors flex items-center justify-center"><i class="fa-solid fa-rotate-left"></i></button>
+                <button onclick="pressPinDigit('0')" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-lg transition-colors">0</button>
+                <button onclick="backspacePinDigit()" class="h-12 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-700 font-medium text-xs transition-colors flex items-center justify-center"><i class="fa-solid fa-delete-left text-base"></i></button>
+            </div>
+            <p id="pin-error-msg" class="text-xs text-rose-500 font-medium hidden">Incorrect PIN. Try again!</p>
+        </div>
+    </div>
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30 px-4 py-3.5">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-slate-900 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-sm">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-slate-900 tracking-tight">Plan & Finance</h1>
+                    <p class="text-[11px] text-slate-400 font-medium" id="current-date"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="lockAppManually()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs transition-colors" title="Lock App">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+                <div class="bg-slate-100 px-3 py-1 rounded-xl flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                    <span id="save-status-icon" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span id="completion-stats" class="text-xs font-semibold text-slate-800">0/0 Tasks</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 mt-5">
+
+        <div class="flex p-1 bg-slate-200/60 backdrop-blur-sm rounded-2xl mb-5 text-xs font-medium gap-1 no-scrollbar overflow-x-auto">
+            <button id="tab-tasks-btn" onclick="switchTab('tasks')" class="tab-btn active flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-check text-[11px]"></i> Tasks
+            </button>
+            <button id="tab-finance-btn" onclick="switchTab('finance')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-arrow-left-right text-[11px]"></i> Cash Flow
+            </button>
+            <button id="tab-debts-btn" onclick="switchTab('debts')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-handshake text-[11px]"></i> Debts
+            </button>
+            <button id="tab-loans-btn" onclick="switchTab('loans')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-building-columns text-[11px]"></i> Loans
+            </button>
+            <button id="tab-chitty-btn" onclick="switchTab('chitty')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-piggy-bank text-[11px]"></i> ചിട്ടി (Chit)
+            </button>
+            <button id="tab-accounts-btn" onclick="switchTab('accounts')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-wallet text-[11px]"></i> Accounts
+            </button>
+            <button id="tab-goals-btn" onclick="switchTab('goals')" class="tab-btn flex-1 py-2 px-3 rounded-xl text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-bullseye text-[11px]"></i> Goals
+            </button>
+        </div>
+
+        <div id="tab-tasks" class="space-y-4">
+            <div class="flex border-b border-slate-200/80 text-xs font-medium gap-5 pb-2">
+                <button id="subtab-routines-btn" onclick="switchTaskSubTab('routines')" class="text-slate-900 font-bold border-b-2 border-slate-900 pb-2 flex items-center gap-1.5 transition-all">
+                    Daily Routines
+                </button>
+                <button id="subtab-tasks-btn" onclick="switchTaskSubTab('onetimetasks')" class="text-slate-400 hover:text-slate-600 pb-2 flex items-center gap-1.5 transition-all">
+                    One-time Tasks
+                </button>
+            </div>
+
+            <!-- ROUTINE SECTION -->
+            <div id="routine-section" class="space-y-4">
+                <div class="app-card p-4">
+                    <form id="routine-form" onsubmit="addRoutine(event)" class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="sm:col-span-2">
+                                <input type="text" id="routine-title" required placeholder="Habit / Daily task..." 
+                                       class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-800 text-slate-800 placeholder-slate-400">
+                            </div>
+                            <div>
+                                <input type="time" id="routine-time" required
+                                       class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-800 text-slate-700">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl transition-all shadow-sm">
+                            + Add Habit
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <div id="routines-list" class="space-y-2"></div>
+                    <div id="empty-routines-state" class="hidden text-center py-10">
+                        <i class="fa-solid fa-calendar-day text-slate-200 text-3xl mb-2"></i>
+                        <p class="text-slate-400 text-xs">No daily habits scheduled yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONE-TIME TASKS SECTION -->
+            <div id="onetime-tasks-section" class="hidden space-y-4">
+                <div class="app-card p-4">
+                    <form id="task-form" onsubmit="addTask(event)" class="space-y-3">
+                        <div>
+                            <input type="text" id="task-title" required placeholder="Task title..." 
+                                   class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-800 text-slate-800">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="date" id="task-date" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-700">
+                            <input type="time" id="task-time" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-700">
+                            <select id="task-category" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-700">
+                                <option value="Work">💼 Work</option>
+                                <option value="Personal">🏠 Personal</option>
+                                <option value="Health">🏥 Health</option>
+                                <option value="Payments">💳 Payment</option>
+                                <option value="Others">📚 Other</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                            + Save Task
+                        </button>
+                    </form>
+                </div>
+
+                <div id="task-list" class="space-y-2"></div>
+                <div id="empty-tasks-state" class="hidden text-center py-10">
+                    <i class="fa-solid fa-clipboard-check text-slate-200 text-3xl mb-2"></i>
+                    <p class="text-slate-400 text-xs">No pending tasks.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finance Tab -->
+        <div id="tab-finance" class="hidden space-y-4">
+            <div class="app-card p-4">
+                <form id="finance-form" onsubmit="addTransaction(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="finance-desc" required placeholder="Description (e.g., Coffee, Salary)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="finance-amount" required min="1" placeholder="Amount (₹)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <select id="finance-type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                            <option value="expense">🔴 Expense</option>
+                            <option value="income">🟢 Income</option>
+                        </select>
+                        <select id="finance-account" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                            <option value="cash">💵 Cash</option>
+                            <option value="federal">🏦 Federal Bank</option>
+                            <option value="sbi">🏛️ SBI Bank</option>
+                        </select>
+                        <input type="date" id="finance-date" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Record Transaction
+                    </button>
+                </form>
+            </div>
+
+            <div id="finance-list" class="space-y-2"></div>
+            <div id="empty-finance-state" class="hidden text-center py-10">
+                <i class="fa-solid fa-receipt text-slate-200 text-3xl mb-2"></i>
+                <p class="text-slate-400 text-xs">No transactions recorded yet.</p>
+            </div>
+        </div>
+
+        <!-- Debts Tab -->
+        <div id="tab-debts" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-emerald-50/60 border border-emerald-100 p-3.5 rounded-2xl">
+                    <span class="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide block">Receivable (കിട്ടാനുള്ളത്)</span>
+                    <span class="text-lg font-bold text-emerald-800 mt-0.5 block" id="total-receivable">₹0</span>
+                </div>
+                <div class="bg-rose-50/60 border border-rose-100 p-3.5 rounded-2xl">
+                    <span class="text-[10px] text-rose-600 font-semibold uppercase tracking-wide block">Payable (കൊടുക്കാനുള്ളത്)</span>
+                    <span class="text-lg font-bold text-rose-800 mt-0.5 block" id="total-payable">₹0</span>
+                </div>
+            </div>
+
+            <div class="app-card p-4">
+                <form id="debt-form" onsubmit="addDebt(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="debt-person" required placeholder="Person / Name" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="debt-amount" required min="1" placeholder="Amount (₹)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <select id="debt-type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                            <option value="receivable">🟢 Receivable (Get)</option>
+                            <option value="payable">🔴 Payable (Give)</option>
+                        </select>
+                        <input type="date" id="debt-date" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="text" id="debt-desc" placeholder="Notes (Optional)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Save Debt Record
+                    </button>
+                </form>
+            </div>
+
+            <div id="debts-list" class="space-y-2"></div>
+            <div id="empty-debts-state" class="hidden text-center py-10">
+                <i class="fa-solid fa-hand-holding-dollar text-slate-200 text-3xl mb-2"></i>
+                <p class="text-slate-400 text-xs">No active debts recorded.</p>
+            </div>
+        </div>
+
+        <!-- Loans Tab -->
+        <div id="tab-loans" class="hidden space-y-4">
+            <div class="app-card p-4">
+                <form id="loan-form" onsubmit="addLoan(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="loan-title" required placeholder="Loan Provider / Bank" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="loan-principal" required min="1" placeholder="Total Principal Amount (₹)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="number" id="loan-emi" required min="1" placeholder="Monthly EMI (₹)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="loan-dueday" required min="1" max="31" placeholder="Due Day of Month (1-31)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <select id="loan-account" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                            <option value="federal">🏦 Federal Bank</option>
+                            <option value="sbi">🏛️ SBI Bank</option>
+                            <option value="cash">💵 Cash</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Add Loan EMI
+                    </button>
+                </form>
+            </div>
+
+            <div id="loans-list" class="space-y-2"></div>
+            <div id="empty-loans-state" class="hidden text-center py-10">
+                <i class="fa-solid fa-landmark text-slate-200 text-3xl mb-2"></i>
+                <p class="text-slate-400 text-xs">No active loans added.</p>
+            </div>
+        </div>
+
+        <!-- Chitty Tab -->
+        <div id="tab-chitty" class="hidden space-y-4">
+            <div class="app-card p-4">
+                <form id="chitty-form" onsubmit="addChitty(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="chitty-name" required placeholder="Chit Name / KSFE" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="chitty-total" required min="1" placeholder="Total Value (₹)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input type="number" id="chitty-installment" required min="1" placeholder="Monthly (₹)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="chitty-months" required min="1" placeholder="Total Months" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="chitty-dueday" required min="1" max="31" placeholder="Due Day" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="chitty-paid-count" min="0" placeholder="Paid Months" value="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Add Chit Scheme
+                    </button>
+                </form>
+            </div>
+
+            <div id="chitty-list" class="space-y-2.5"></div>
+            <div id="empty-chitty-state" class="hidden text-center py-10">
+                <i class="fa-solid fa-coins text-slate-200 text-3xl mb-2"></i>
+                <p class="text-slate-400 text-xs">No active chit funds added.</p>
+            </div>
+        </div>
+
+        <!-- Accounts & Security Tab -->
+        <div id="tab-accounts" class="hidden space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <span class="text-[11px] font-medium text-slate-400 block">Cash Balance</span>
+                    <h3 class="text-xl font-bold text-slate-800 mt-1" id="acc-cash-val">₹0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <span class="text-[11px] font-medium text-slate-400 block">Federal Bank</span>
+                    <h3 class="text-xl font-bold text-slate-800 mt-1" id="acc-federal-val">₹0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <span class="text-[11px] font-medium text-slate-400 block">SBI Bank</span>
+                    <h3 class="text-xl font-bold text-slate-800 mt-1" id="acc-sbi-val">₹0</h3>
+                </div>
+            </div>
+
+            <div class="app-card p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">App Security PIN</h4>
+                        <p class="text-[11px] text-slate-400" id="pin-status-text">PIN Lock disabled</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="set-pin-btn" onclick="promptSetPin()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors">
+                            Set PIN
+                        </button>
+                        <button id="remove-pin-btn" onclick="removePin()" class="hidden bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors">
+                            Disable PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card p-4">
+                <h4 class="text-xs font-bold text-slate-800 mb-3">Adjust Balances</h4>
+                <form id="balance-update-form" onsubmit="updateBalances(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Cash (₹)</label>
+                            <input type="number" id="init-cash" required placeholder="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Federal (₹)</label>
+                            <input type="number" id="init-federal" required placeholder="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">SBI (₹)</label>
+                            <input type="number" id="init-sbi" required placeholder="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Update Balances
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Goals Tab -->
+        <div id="tab-goals" class="hidden space-y-4">
+            <div class="app-card p-4">
+                <form id="goal-form" onsubmit="addGoal(event)" class="space-y-3">
+                    <input type="text" id="goal-title" required placeholder="Goal name (e.g., Bike, Laptop)" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="number" id="goal-target" required min="1" placeholder="Target Amount (₹)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="number" id="goal-saved" min="0" placeholder="Initial Saved (₹)" value="0" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                        <input type="date" id="goal-date" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-xl shadow-sm">
+                        Create Savings Target
+                    </button>
+                </form>
+            </div>
+
+            <div id="goals-list" class="space-y-2.5"></div>
+            <div id="empty-goals-state" class="hidden text-center py-10">
+                <i class="fa-solid fa-trophy text-slate-200 text-3xl mb-2"></i>
+                <p class="text-slate-400 text-xs">No savings goals created.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl flex items-center gap-2 transition-all duration-300 opacity-0 pointer-events-none z-50 text-xs font-medium">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // --- PERSISTENT STORAGE ENGINE (Strict Synchronous LocalStorage) ---
+        function saveToStorage(key, val) {
+            try {
+                localStorage.setItem(key, JSON.stringify(val));
+            } catch (e) {
+                console.error("LocalStorage save error:", e);
+            }
+        }
+
+        function loadFromStorage(key, fallback) {
+            try {
+                const localData = localStorage.getItem(key);
+                if (localData !== null) {
+                    return JSON.parse(localData);
+                }
+            } catch (e) {
+                console.error("LocalStorage load error:", e);
+            }
+            return fallback;
+        }
+
+        // --- GLOBAL APP STATE ---
+        window.routines = [];
+        window.tasks = [];
+        window.transactions = [];
+        window.accountBalances = { cash: 0, federal: 0, sbi: 0 };
+        window.debts = [];
+        window.loans = [];
+        window.chitties = [];
+        window.goals = [];
+        window.userPin = null;
+
+        // Load all saved user state from Persistent DB on startup
+        function loadAllSavedState() {
+            window.routines = loadFromStorage('app_routines', []);
+            window.tasks = loadFromStorage('app_tasks', []);
+            window.transactions = loadFromStorage('app_transactions', []);
+            window.accountBalances = loadFromStorage('app_accountBalances', { cash: 0, federal: 0, sbi: 0 });
+            window.debts = loadFromStorage('app_debts', []);
+            window.loans = loadFromStorage('app_loans', []);
+            window.chitties = loadFromStorage('app_chitties', []);
+            window.goals = loadFromStorage('app_goals', []);
+            window.userPin = loadFromStorage('app_userPin', null);
+
+            renderAll();
+
+            if (window.userPin) {
+                showPinUnlockScreen();
+            } else {
+                closePinScreen();
+            }
+        }
+
+        window.saveState = function() {
+            saveToStorage('app_routines', window.routines);
+            saveToStorage('app_tasks', window.tasks);
+            saveToStorage('app_transactions', window.transactions);
+            saveToStorage('app_accountBalances', window.accountBalances);
+            saveToStorage('app_debts', window.debts);
+            saveToStorage('app_loans', window.loans);
+            saveToStorage('app_chitties', window.chitties);
+            saveToStorage('app_goals', window.goals);
+            saveToStorage('app_userPin', window.userPin);
+        };
+
+        let enteredPin = "";
+        let pinSetupStep = 0;
+        let tempNewPin = "";
+
+        window.pressPinDigit = function(digit) {
+            if (enteredPin.length < 4) {
+                enteredPin += digit;
+                updatePinDots();
+                if (enteredPin.length === 4) {
+                    setTimeout(handlePinSubmission, 150);
+                }
+            }
+        };
+
+        window.backspacePinDigit = function() {
+            if (enteredPin.length > 0) {
+                enteredPin = enteredPin.slice(0, -1);
+                updatePinDots();
+            }
+        };
+
+        window.clearPinInput = function() {
+            enteredPin = "";
+            updatePinDots();
+            document.getElementById('pin-error-msg').classList.add('hidden');
+        };
+
+        function updatePinDots() {
+            const dots = document.getElementById('pin-dots').children;
+            for (let i = 0; i < 4; i++) {
+                if (i < enteredPin.length) {
+                    dots[i].className = "w-3.5 h-3.5 rounded-full bg-slate-900 border-2 border-slate-900 transition-all duration-200 scale-110";
+                } else {
+                    dots[i].className = "w-3.5 h-3.5 rounded-full border-2 border-slate-300 transition-all duration-200";
+                }
+            }
+        }
+
+        function handlePinSubmission() {
+            const errorMsg = document.getElementById('pin-error-msg');
+            
+            if (pinSetupStep === 1) {
+                tempNewPin = enteredPin;
+                enteredPin = "";
+                pinSetupStep = 2;
+                updatePinDots();
+                document.getElementById('pin-screen-title').innerText = "Confirm PIN";
+                document.getElementById('pin-screen-subtitle').innerText = "Re-enter your 4-digit PIN";
+                return;
+            }
+
+            if (pinSetupStep === 2) {
+                if (enteredPin === tempNewPin) {
+                    window.userPin = enteredPin;
+                    window.saveState();
+                    showToast("Security PIN Configured!");
+                    closePinScreen();
+                    updatePinSettingsUI();
+                } else {
+                    errorMsg.innerText = "PINs do not match. Try again!";
+                    errorMsg.classList.remove('hidden');
+                    enteredPin = "";
+                    updatePinDots();
+                }
+                return;
+            }
+
+            if (enteredPin === window.userPin) {
+                closePinScreen();
+                showToast("Unlocked!");
+            } else {
+                errorMsg.innerText = "Incorrect PIN. Try again!";
+                errorMsg.classList.remove('hidden');
+                enteredPin = "";
+                updatePinDots();
+            }
+        }
+
+        function closePinScreen() {
+            document.getElementById('pin-lock-screen').classList.add('hidden');
+            enteredPin = "";
+            pinSetupStep = 0;
+            tempNewPin = "";
+            updatePinDots();
+            document.getElementById('pin-error-msg').classList.add('hidden');
+        }
+
+        window.lockAppManually = function() {
+            if (!window.userPin) {
+                showToast("Set a PIN first in Accounts tab!");
+                switchTab('accounts');
+                return;
+            }
+            showPinUnlockScreen();
+        };
+
+        function showPinUnlockScreen() {
+            enteredPin = "";
+            pinSetupStep = 0;
+            updatePinDots();
+            document.getElementById('pin-screen-title').innerText = "Security Lock";
+            document.getElementById('pin-screen-subtitle').innerText = "Enter your 4-digit PIN to access";
+            document.getElementById('pin-error-msg').classList.add('hidden');
+            document.getElementById('pin-lock-screen').classList.remove('hidden');
+        }
+
+        window.promptSetPin = function() {
+            enteredPin = "";
+            pinSetupStep = 1;
+            tempNewPin = "";
+            updatePinDots();
+            document.getElementById('pin-screen-title').innerText = "Create New PIN";
+            document.getElementById('pin-screen-subtitle').innerText = "Enter a 4-digit security PIN";
+            document.getElementById('pin-error-msg').classList.add('hidden');
+            document.getElementById('pin-lock-screen').classList.remove('hidden');
+        };
+
+        window.removePin = function() {
+            window.userPin = null;
+            window.saveState();
+            showToast("PIN lock disabled");
+            updatePinSettingsUI();
+        };
+
+        function updatePinSettingsUI() {
+            const statusText = document.getElementById('pin-status-text');
+            const setBtn = document.getElementById('set-pin-btn');
+            const removeBtn = document.getElementById('remove-pin-btn');
+
+            if (window.userPin) {
+                statusText.innerText = "🔒 PIN Protection Enabled";
+                statusText.className = "text-[11px] text-emerald-600 font-semibold";
+                setBtn.innerText = "Change PIN";
+                removeBtn.classList.remove('hidden');
+            } else {
+                statusText.innerText = "PIN Lock disabled";
+                statusText.className = "text-[11px] text-slate-400";
+                setBtn.innerText = "Set PIN";
+                removeBtn.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "hidden" && window.userPin) {
+                showPinUnlockScreen();
+            }
+        });
+
+        window.addRoutine = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('routine-title').value;
+            const time = document.getElementById('routine-time').value;
+            window.routines.push({ id: Date.now(), title, time, completed: false });
+            window.saveState();
+            document.getElementById('routine-form').reset();
+            renderRoutines();
+            showToast("Habit added");
+        };
+
+        window.deleteRoutine = function(id) {
+            window.routines = window.routines.filter(r => r.id !== id);
+            window.saveState();
+            renderRoutines();
+            showToast("Habit deleted");
+        };
+
+        window.addTask = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value;
+            const date = document.getElementById('task-date').value;
+            const time = document.getElementById('task-time').value;
+            const category = document.getElementById('task-category').value;
+            window.tasks.push({ id: Date.now(), title, date, time, category, completed: false });
+            window.saveState();
+            document.getElementById('task-form').reset();
+            renderTasks();
+            showToast("Task created");
+        };
+
+        window.toggleTask = function(id) {
+            window.tasks = window.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+            window.saveState();
+            renderTasks();
+        };
+
+        window.deleteTask = function(id) {
+            window.tasks = window.tasks.filter(t => t.id !== id);
+            window.saveState();
+            renderTasks();
+            showToast("Task deleted");
+        };
+
+        window.addTransaction = function(e) {
+            e.preventDefault();
+            const desc = document.getElementById('finance-desc').value;
+            const amount = parseFloat(document.getElementById('finance-amount').value);
+            const type = document.getElementById('finance-type').value;
+            const account = document.getElementById('finance-account').value;
+            const date = document.getElementById('finance-date').value;
+
+            if (type === 'income') window.accountBalances[account] += amount;
+            else window.accountBalances[account] -= amount;
+
+            window.transactions.push({ id: Date.now(), desc, amount, type, account, date });
+            window.saveState();
+            document.getElementById('finance-form').reset();
+            renderFinance();
+            renderAccounts();
+            showToast("Transaction saved");
+        };
+
+        window.deleteTransaction = function(id) {
+            const tx = window.transactions.find(t => t.id === id);
+            if (tx) {
+                if (tx.type === 'income') window.accountBalances[tx.account] -= tx.amount;
+                else window.accountBalances[tx.account] += tx.amount;
+                window.transactions = window.transactions.filter(t => t.id !== id);
+                window.saveState();
+                renderFinance();
+                renderAccounts();
+                showToast("Transaction removed");
+            }
+        };
+
+        window.addDebt = function(e) {
+            e.preventDefault();
+            const person = document.getElementById('debt-person').value;
+            const amount = parseFloat(document.getElementById('debt-amount').value);
+            const type = document.getElementById('debt-type').value;
+            const date = document.getElementById('debt-date').value;
+            const desc = document.getElementById('debt-desc').value;
+
+            window.debts.push({ id: Date.now(), person, amount, type, date, desc });
+            window.saveState();
+            document.getElementById('debt-form').reset();
+            renderDebts();
+            showToast("Debt logged");
+        };
+
+        window.deleteDebt = function(id) {
+            window.debts = window.debts.filter(d => d.id !== id);
+            window.saveState();
+            renderDebts();
+            showToast("Debt entry deleted");
+        };
+
+        window.addLoan = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('loan-title').value;
+            const principal = parseFloat(document.getElementById('loan-principal').value);
+            const emi = parseFloat(document.getElementById('loan-emi').value);
+            const dueday = parseInt(document.getElementById('loan-dueday').value);
+            const account = document.getElementById('loan-account').value;
+
+            window.loans.push({ id: Date.now(), title, principal, emi, dueday, account });
+            window.saveState();
+            document.getElementById('loan-form').reset();
+            renderLoans();
+            showToast("Loan saved");
+        };
+
+        window.deleteLoan = function(id) {
+            window.loans = window.loans.filter(l => l.id !== id);
+            window.saveState();
+            renderLoans();
+            showToast("Loan deleted");
+        };
+
+        window.addChitty = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('chitty-name').value;
+            const total = parseFloat(document.getElementById('chitty-total').value);
+            const installment = parseFloat(document.getElementById('chitty-installment').value);
+            const months = parseInt(document.getElementById('chitty-months').value);
+            const dueday = parseInt(document.getElementById('chitty-dueday').value);
+            const paidCount = parseInt(document.getElementById('chitty-paid-count').value) || 0;
+
+            window.chitties.push({ id: Date.now(), name, total, installment, months, dueday, paidCount });
+            window.saveState();
+            document.getElementById('chitty-form').reset();
+            renderChitties();
+            showToast("Chit fund saved");
+        };
+
+        window.markChittyPaid = function(id) {
+            window.chitties = window.chitties.map(c => {
+                if (c.id === id && c.paidCount < c.months) {
+                    return { ...c, paidCount: c.paidCount + 1 };
+                }
+                return c;
+            });
+            window.saveState();
+            renderChitties();
+            showToast("Installment updated");
+        };
+
+        window.deleteChitty = function(id) {
+            window.chitties = window.chitties.filter(c => c.id !== id);
+            window.saveState();
+            renderChitties();
+            showToast("Chit deleted");
+        };
+
+        window.updateBalances = function(e) {
+            e.preventDefault();
+            window.accountBalances.cash = parseFloat(document.getElementById('init-cash').value) || 0;
+            window.accountBalances.federal = parseFloat(document.getElementById('init-federal').value) || 0;
+            window.accountBalances.sbi = parseFloat(document.getElementById('init-sbi').value) || 0;
+            window.saveState();
+            renderAccounts();
+            showToast("Balances updated");
+        };
+
+        window.addGoal = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('goal-title').value;
+            const target = parseFloat(document.getElementById('goal-target').value);
+            const saved = parseFloat(document.getElementById('goal-saved').value) || 0;
+            const date = document.getElementById('goal-date').value;
+
+            window.goals.push({ id: Date.now(), title, target, saved, date });
+            window.saveState();
+            document.getElementById('goal-form').reset();
+            renderGoals();
+            showToast("Goal created");
+        };
+
+        window.addGoalDeposit = function(id) {
+            const amountStr = prompt("Enter deposit amount (₹):");
+            const amount = parseFloat(amountStr);
+            if (amount && amount > 0) {
+                window.goals = window.goals.map(g => g.id === id ? { ...g, saved: g.saved + amount } : g);
+                window.saveState();
+                renderGoals();
+                showToast("Deposit saved");
+            }
+        };
+
+        window.deleteGoal = function(id) {
+            window.goals = window.goals.filter(g => g.id !== id);
+            window.saveState();
+            renderGoals();
+            showToast("Goal deleted");
+        };
+
+        window.renderAll = function() {
+            renderRoutines();
+            renderTasks();
+            renderFinance();
+            renderDebts();
+            renderLoans();
+            renderChitties();
+            renderAccounts();
+            renderGoals();
+            updatePinSettingsUI();
+        };
+
+        function renderRoutines() {
+            const container = document.getElementById('routines-list');
+            const emptyState = document.getElementById('empty-routines-state');
+            container.innerHTML = '';
+            if (!window.routines.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            window.routines.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'app-card p-3.5 flex items-center justify-between gap-3';
+                card.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">${r.title}</h4>
+                        <span class="text-[10px] text-slate-400"><i class="fa-regular fa-clock"></i> ${r.time}</span>
+                    </div>
+                    <button onclick="deleteRoutine(${r.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('task-list');
+            const emptyState = document.getElementById('empty-tasks-state');
+            container.innerHTML = '';
+            if (!window.tasks.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            const completedCount = window.tasks.filter(t => t.completed).length;
+            document.getElementById('completion-stats').innerText = `${completedCount}/${window.tasks.length} Tasks`;
+
+            window.tasks.forEach(t => {
+                const card = document.createElement('div');
+                card.className = `app-card p-3.5 flex items-center justify-between gap-3 ${t.completed ? 'bg-slate-50/60 opacity-60' : ''}`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 rounded text-slate-900 focus:ring-0">
+                        <div>
+                            <h4 class="font-semibold text-xs ${t.completed ? 'line-through text-slate-400' : 'text-slate-800'}">${t.title}</h4>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] text-slate-400">${t.date} ${t.time}</span>
+                                <span class="text-[9px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-md">${t.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask(${t.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFinance() {
+            const container = document.getElementById('finance-list');
+            const emptyState = document.getElementById('empty-finance-state');
+            container.innerHTML = '';
+            if (!window.transactions.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            window.transactions.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'app-card p-3.5 flex items-center justify-between gap-3';
+                const isInc = t.type === 'income';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl ${isInc ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'} flex items-center justify-center text-xs">
+                            <i class="fa-solid ${isInc ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-xs text-slate-800">${t.desc}</h4>
+                            <span class="text-[10px] text-slate-400">${t.date} • ${t.account.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="text-right flex items-center gap-3">
+                        <span class="font-bold text-xs ${isInc ? 'text-emerald-600' : 'text-slate-800'}">${isInc ? '+' : '-'}₹${t.amount.toLocaleString('en-IN')}</span>
+                        <button onclick="deleteTransaction(${t.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderDebts() {
+            const container = document.getElementById('debts-list');
+            const emptyState = document.getElementById('empty-debts-state');
+            container.innerHTML = '';
+            if (!window.debts.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            let totalRec = 0;
+            let totalPay = 0;
+
+            window.debts.forEach(d => {
+                if (d.type === 'receivable') totalRec += d.amount;
+                else totalPay += d.amount;
+
+                const card = document.createElement('div');
+                card.className = 'app-card p-3.5 flex items-center justify-between gap-3';
+                const isRec = d.type === 'receivable';
+                card.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold text-xs text-slate-800">${d.person}</h4>
+                        <span class="text-[10px] text-slate-400">${d.date} ${d.desc ? '• ' + d.desc : ''}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-xs ${isRec ? 'text-emerald-600' : 'text-rose-600'}">₹${d.amount.toLocaleString('en-IN')} (${isRec ? 'Get' : 'Give'})</span>
+                        <button onclick="deleteDebt(${d.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('total-receivable').innerText = `₹${totalRec.toLocaleString('en-IN')}`;
+            document.getElementById('total-payable').innerText = `₹${totalPay.toLocaleString('en-IN')}`;
+        }
+
+        function renderLoans() {
+            const container = document.getElementById('loans-list');
+            const emptyState = document.getElementById('empty-loans-state');
+            container.innerHTML = '';
+            if (!window.loans.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            window.loans.forEach(l => {
+                const card = document.createElement('div');
+                card.className = 'app-card p-3.5 flex items-center justify-between gap-3';
+                card.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold text-xs text-slate-800">${l.title}</h4>
+                        <span class="text-[10px] text-slate-400">EMI: ₹${l.emi.toLocaleString('en-IN')} / mo (Due: Day ${l.dueday})</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-xs text-slate-800">₹${l.principal.toLocaleString('en-IN')}</span>
+                        <button onclick="deleteLoan(${l.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderChitties() {
+            const container = document.getElementById('chitty-list');
+            const emptyState = document.getElementById('empty-chitty-state');
+            container.innerHTML = '';
+            if (!window.chitties.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            window.chitties.forEach(c => {
+                const progressPct = Math.min(100, Math.round((c.paidCount / c.months) * 100));
+                const card = document.createElement('div');
+                card.className = 'app-card p-4 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800">${c.name}</h4>
+                            <span class="text-[10px] text-slate-400">₹${c.installment.toLocaleString('en-IN')} / mo • Due Day ${c.dueday}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-slate-900">₹${c.total.toLocaleString('en-IN')}</span>
+                            <button onclick="deleteChitty(${c.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-medium">
+                            <span>Paid: ${c.paidCount} / ${c.months} months</span>
+                            <span>${progressPct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-slate-900 h-1.5 rounded-full transition-all duration-300" style="width: ${progressPct}%"></div>
+                        </div>
+                    </div>
+                    <button onclick="markChittyPaid(${c.id})" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold py-1.5 rounded-xl transition-colors">
+                        + Record Paid Month
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAccounts() {
+            document.getElementById('acc-cash-val').innerText = `₹${window.accountBalances.cash.toLocaleString('en-IN')}`;
+            document.getElementById('acc-federal-val').innerText = `₹${window.accountBalances.federal.toLocaleString('en-IN')}`;
+            document.getElementById('acc-sbi-val').innerText = `₹${window.accountBalances.sbi.toLocaleString('en-IN')}`;
+
+            document.getElementById('init-cash').value = window.accountBalances.cash;
+            document.getElementById('init-federal').value = window.accountBalances.federal;
+            document.getElementById('init-sbi').value = window.accountBalances.sbi;
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goals-list');
+            const emptyState = document.getElementById('empty-goals-state');
+            container.innerHTML = '';
+            if (!window.goals.length) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            window.goals.forEach(g => {
+                const progressPct = Math.min(100, Math.round((g.saved / g.target) * 100));
+                const card = document.createElement('div');
+                card.className = 'app-card p-4 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800">${g.title}</h4>
+                            <span class="text-[10px] text-slate-400">Target Date: ${g.date}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-emerald-600">₹${g.saved.toLocaleString('en-IN')} / ₹${g.target.toLocaleString('en-IN')}</span>
+                            <button onclick="deleteGoal(${g.id})" class="text-slate-300 hover:text-rose-500 text-xs transition-colors p-1"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: ${progressPct}%"></div>
+                    </div>
+                    <button onclick="addGoalDeposit(${g.id})" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold py-1.5 rounded-xl transition-colors">
+                        + Add Deposit
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.switchTab = function(tabId) {
+            const tabs = ['tasks', 'finance', 'debts', 'loans', 'chitty', 'accounts', 'goals'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}-btn`).classList.remove('active');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}-btn`).classList.add('active');
+        };
+
+        window.switchTaskSubTab = function(tab) {
+            const routineSec = document.getElementById('routine-section');
+            const onetimeSec = document.getElementById('onetime-tasks-section');
+            const subtabRoutineBtn = document.getElementById('subtab-routines-btn');
+            const subtabTaskBtn = document.getElementById('subtab-tasks-btn');
+
+            if (tab === 'routines') {
+                routineSec.classList.remove('hidden');
+                onetimeSec.classList.add('hidden');
+                subtabRoutineBtn.className = 'text-slate-900 font-bold border-b-2 border-slate-900 pb-2 flex items-center gap-1.5 transition-all';
+                subtabTaskBtn.className = 'text-slate-400 hover:text-slate-600 pb-2 flex items-center gap-1.5 transition-all';
+            } else {
+                routineSec.classList.add('hidden');
+                onetimeSec.classList.remove('hidden');
+                subtabRoutineBtn.className = 'text-slate-400 hover:text-slate-600 pb-2 flex items-center gap-1.5 transition-all';
+                subtabTaskBtn.className = 'text-slate-900 font-bold border-b-2 border-slate-900 pb-2 flex items-center gap-1.5 transition-all';
+            }
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2000);
+        }
+
+        window.onload = function() {
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+
+            loadAllSavedState();
+        };
+    </script>
+</body>
+</html>
+```
